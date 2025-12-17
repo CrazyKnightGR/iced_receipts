@@ -1,7 +1,5 @@
 //! A read-only view of a sale.
-use iced::widget::{
-    button, column, container, horizontal_space, row, scrollable, text,
-};
+use iced::widget::{button, column, container, row, scrollable, space, text};
 use iced::Length::Fill;
 use iced::{Alignment, Element, Length};
 
@@ -14,11 +12,11 @@ pub enum Message {
     StartEdit,
 }
 
-pub fn view(sale: &Sale) -> Element<Message> {
+pub fn view(sale: &Sale) -> Element<'_, Message> {
     let header = row![
         button(text("←").center()).width(40).on_press(Message::Back),
         text(&sale.name).size(16),
-        horizontal_space(),
+        space(),
         button("Edit").on_press(Message::StartEdit)
     ]
     .spacing(10)
@@ -28,7 +26,7 @@ pub fn view(sale: &Sale) -> Element<Message> {
         text("Item Name").width(Fill),
         text("Qty").align_x(Alignment::Center).width(80.0),
         text("Price").align_x(Alignment::End).width(100.0),
-        text("Tax Group").width(140.0),
+        text("Tax Group").align_x(Alignment::Center).width(140.0),
         text("Total").align_x(Alignment::End).width(100.0),
     ]
     .spacing(2);
@@ -46,7 +44,9 @@ pub fn view(sale: &Sale) -> Element<Message> {
                         text(format!("${:.2}", item.price()))
                             .align_x(Alignment::End)
                             .width(100.0),
-                        text(format!("{}", item.tax_group)).width(140.0),
+                        text(format!("{}", item.tax_group))
+                            .width(140.0)
+                            .align_x(Alignment::Center),
                         text(format!("${:.2}", item.price() * item.quantity()))
                             .align_x(Alignment::End)
                             .width(100.0)
@@ -63,7 +63,7 @@ pub fn view(sale: &Sale) -> Element<Message> {
     let totals = column![
         row![
             text("Subtotal").width(150.0),
-            horizontal_space(),
+            space(),
             text(format!("${:.2}", sale.calculate_subtotal()))
         ],
         row![
@@ -72,23 +72,23 @@ pub fn view(sale: &Sale) -> Element<Message> {
                 "{}%",
                 sale.service_charge_percent.map_or(0.0, |p| p)
             )),
-            horizontal_space(),
-            text(format!("${:.2}", sale.calculate_service_charge()))
+            space(),
+            text(format!(" ${:.2}", sale.calculate_service_charge()))
         ],
         row![
             text("Tax").width(150.0),
-            horizontal_space(),
+            space(),
             text(format!("${:.2}", sale.calculate_tax()))
         ],
         row![
             text("Gratuity").width(150.0),
             text(format!("${:.2}", sale.gratuity_amount.unwrap_or(0.0))),
-            horizontal_space(),
-            text(format!("${:.2}", sale.gratuity_amount.unwrap_or(0.0)))
+            space(),
+            text(format!(" ${:.2}", sale.gratuity_amount.unwrap_or(0.0)))
         ],
         row![
             text("Total").width(150.0).size(16),
-            horizontal_space(),
+            space(),
             text(format!("${:.2}", sale.calculate_total())).size(16)
         ]
     ]

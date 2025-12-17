@@ -1,5 +1,5 @@
 //! View and edit sales
-use iced::widget::{focus_next, text_input};
+use iced::widget::{operation::focus, operation::focus_next};
 use iced::Element;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -53,23 +53,12 @@ impl SaleItem {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct Sale {
     pub items: Vec<SaleItem>,
     pub service_charge_percent: Option<f32>,
     pub gratuity_amount: Option<f32>,
     pub name: String,
-}
-
-impl Default for Sale {
-    fn default() -> Self {
-        Self {
-            items: Vec::new(),
-            service_charge_percent: None,
-            gratuity_amount: None,
-            name: String::new(),
-        }
-    }
 }
 
 impl Sale {
@@ -181,25 +170,16 @@ pub fn update(
                 // try to move to the next 'field' in this list. if all items
                 // are filled out, add a new item and move to it instead
                 if let Some(item) = sale.items.iter().find(|i| i.id == id) {
-                    return if item.name.is_empty() {
-                        Action::task(text_input::focus(edit::form_id(
-                            "name", id,
-                        )))
+                    if item.name.is_empty() {
+                        Action::task(focus(edit::form_id("name", id)))
                     } else if item.quantity.is_none() {
-                        Action::task(text_input::focus(edit::form_id(
-                            "quantity", id,
-                        )))
+                        Action::task(focus(edit::form_id("quantity", id)))
                     } else if item.price.is_none() {
-                        Action::task(text_input::focus(edit::form_id(
-                            "price", id,
-                        )))
+                        Action::task(focus(edit::form_id("price", id)))
                     } else {
                         sale.items.push(SaleItem::default());
-                        Action::task(text_input::focus(edit::form_id(
-                            "name",
-                            id + 1,
-                        )))
-                    };
+                        Action::task(focus(edit::form_id("name", id + 1)))
+                    }
                 } else {
                     Action::none()
                 }
@@ -216,7 +196,7 @@ pub fn update(
     }
 }
 
-pub fn view(sale: &Sale, mode: Mode) -> Element<Message> {
+pub fn view(sale: &Sale, mode: Mode) -> Element<'_, Message> {
     match mode {
         Mode::View => show::view(sale).map(Message::Show),
         Mode::Edit => edit::view(sale).map(Message::Edit),

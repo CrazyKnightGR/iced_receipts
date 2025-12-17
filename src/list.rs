@@ -1,5 +1,5 @@
 //! List sales and navigate to sale details or editing
-use iced::widget::{button, column, container, horizontal_space, row, text};
+use iced::widget::{button, column, container, row, space, text};
 use iced::Alignment::Center;
 use iced::{Element, Fill};
 use std::collections::HashMap;
@@ -31,7 +31,7 @@ pub fn view(sales: &HashMap<usize, Sale>) -> Element<'_, Message> {
             sales_list = sales_list.push(
                 button(
                     row![column![
-                        text(format!("{}", sale.name)).size(13),
+                        text(sale.name.to_string()).size(13),
                         text(format!("Total: ${:.2}", total)).size(12).style(
                             |theme: &iced::Theme| text::Style {
                                 color: Some(
@@ -52,7 +52,7 @@ pub fn view(sales: &HashMap<usize, Sale>) -> Element<'_, Message> {
 
         column![
             row![
-                horizontal_space(),
+                space(),
                 button(text("New Sale").size(14))
                     .style(button::success)
                     .on_press(Message::NewSale),
