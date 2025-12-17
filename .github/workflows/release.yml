@@ -15,31 +15,42 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name:  Rust Cache
+    - name: Setup Rust toolchain
+      uses: actions-rust-lang/setup-rust-toolchain@v1
+    
+    - name: Rust Cache
       uses: Swatinem/rust-cache@v2
     
     - name: Build release
       run: cargo build --release --verbose
     
-    - name:  Get version
+    - name: Get version
       id: version
       shell: bash
       run: echo "VERSION=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')" >> $GITHUB_OUTPUT
     
     - name: Package binary (Unix)
       if: runner.os != 'Windows'
-      run:  |
+      shell: bash
+      run: |
         cd target/release
-        tar czf receipts-${{ steps. version.outputs.VERSION }}-${{ runner.os }}.tar.gz receipts
+        if [ "${{ runner.os }}" == "Linux" ]; then
+          tar czf receipts-${{ steps.version.outputs.VERSION }}-linux-x64.tar.gz receipts
+        elif [ "${{ runner.os }}" == "macOS" ]; then
+          tar czf receipts-${{ steps.version.outputs.VERSION }}-macos-x64.tar.gz receipts
+        fi
     
     - name: Package binary (Windows)
       if: runner.os == 'Windows'
-      run:  |
+      shell: bash
+      run: |
         cd target/release
-        7z a receipts-${{ steps.version.outputs.VERSION }}-Windows.zip receipts. exe
+        7z a receipts-${{ steps.version.outputs.VERSION }}-windows-x64.zip receipts.exe
     
     - name: Upload Release Asset
       uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with: 
         files: target/release/receipts-*
-        tag_name: v${{ steps.version.outputs. VERSION }}
+        tag_name: v${{ steps.version.outputs.VERSION }}
