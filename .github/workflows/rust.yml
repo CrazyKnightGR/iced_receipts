@@ -14,14 +14,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    
+
     # Use Swatinem/rust-cache for automatic Rust caching
     - name: Rust Cache
       uses: Swatinem/rust-cache@v2
-        
+
     - name: Build
       run: cargo build --verbose --release
-      
+
     - name: Run tests
       run: cargo test --verbose
 
@@ -29,11 +29,11 @@ jobs:
     - name: Get version
       id: version
       run: echo "VERSION=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')" >> $GITHUB_OUTPUT
-    
+
     # Upload versioned artifact
     - name: Upload artifact
       uses: actions/upload-artifact@v4
-      with: 
+      with:
         name: receipts-${{ steps.version.outputs.VERSION }}-${{ runner.os }}
         path: target/release/receipts
         retention-days: 30
