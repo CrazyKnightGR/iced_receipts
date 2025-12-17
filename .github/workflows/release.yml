@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  push: 
+    tags: 
+      - 'v*'
+
+jobs: 
+  release:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name:  Rust Cache
+      uses: Swatinem/rust-cache@v2
+    
+    - name: Build release
+      run: cargo build --release --verbose
+    
+    - name:  Get version
+      id: version
+      shell: bash
+      run: echo "VERSION=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')" >> $GITHUB_OUTPUT
+    
+    - name: Package binary (Unix)
+      if: runner.os != 'Windows'
+      run:  |
+        cd target/release
+        tar czf receipts-${{ steps. version.outputs.VERSION }}-${{ runner.os }}.tar.gz receipts
+    
+    - name: Package binary (Windows)
+      if: runner.os == 'Windows'
+      run:  |
+        cd target/release
+        7z a receipts-${{ steps.version.outputs.VERSION }}-Windows.zip receipts. exe
+    
+    - name: Upload Release Asset
+      uses: softprops/action-gh-release@v1
+      with: 
+        files: target/release/receipts-*
+        tag_name: v${{ steps.version.outputs. VERSION }}
